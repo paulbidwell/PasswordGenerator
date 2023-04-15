@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PasswordGenerator.Interfaces;
+using IConfiguration = PasswordGenerator.Interfaces.IConfiguration;
 
 namespace PasswordGenerator;
 
@@ -11,16 +13,22 @@ internal class Program
         var applicationPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
         Directory.SetCurrentDirectory(Path.GetDirectoryName(applicationPath) ?? string.Empty);
 
-        IConfiguration configuration = new ConfigurationBuilder()
+        Microsoft.Extensions.Configuration.IConfiguration configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .Build();
 
         var host = Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
-                services.Configure<PasswordGeneratorOptions>(configuration.GetSection("PasswordGenerator"));
+                services.AddTransient<ICharacterSelector, CharacterSelector>();
+                services.AddTransient<ICharacterSetManager, CharacterSetManager>();
+                services.AddTransient<ICharacterSetShuffler, CharacterSetShuffler>();
+                services.AddTransient<ICollectionShuffler, CollectionShuffler>();
+                services.AddTransient<IConfiguration, Configuration>();
                 services.AddTransient<IGenerator, Generator>();
-                services.AddTransient<IUtility, Utility>();
+                services.AddTransient<IRandomNumberGenerator, RandomNumberGenerator>();
+
+                services.Configure<PasswordGeneratorOptions>(configuration.GetSection("PasswordGenerator"));
             })
             .Build();
 
@@ -34,9 +42,7 @@ internal class Program
             {
                 var generator = host.Services.GetRequiredService<IGenerator>();
 
-                var password = generator
-                    .Configure()
-                    .Generate();
+                var password = generator.Generate();
 
                 passwords.Add(password);
 

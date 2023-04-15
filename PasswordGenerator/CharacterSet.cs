@@ -1,8 +1,11 @@
-﻿namespace PasswordGenerator
+﻿using PasswordGenerator.Interfaces;
+
+namespace PasswordGenerator
 {
-    public class CharacterSet
+    public class CharacterSet : ICharacterSet
     {
-        public char[]? Characters { get; set; } = Array.Empty<char>();
+        public char[] Set { get; set; }
+        public string Characters { get; set; }
         public int Min { get; set; }
     }
 }

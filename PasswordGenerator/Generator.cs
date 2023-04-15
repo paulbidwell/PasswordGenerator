@@ -1,125 +1,123 @@
-﻿using Microsoft.Extensions.Options;
+﻿using PasswordGenerator.Interfaces;
 
 namespace PasswordGenerator
 {
     public class Generator : IGenerator
     {
-        private readonly List<CharacterSet> _characterSets = new();
-        private int _maxRepetition;
-        private char[]? _masterSet;
+        private readonly Configuration _config;
+        private readonly ICollectionShuffler _collectionShuffler;
+        private readonly ICharacterSelector _characterSelector;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
 
-        private readonly IOptions<PasswordGeneratorOptions> _options;
-        private readonly IUtility _utility;
-
-        public Generator(IOptions<PasswordGeneratorOptions> options, IUtility utility)
+        public Generator(Configuration config, ICollectionShuffler collectionShuffler, ICharacterSelector characterSelector, IRandomNumberGenerator randomNumberGenerator)
         {
-            _options = options;
-            _utility = utility;
-        }
-
-        public IGenerator Configure()
-        {
-            _maxRepetition = _options.Value.MaxRepetition;
-            var characterSets = _options.Value.CharactersSets;
-
-            foreach (var characterSet in characterSets)
-            {
-                _characterSets.Add(new CharacterSet
-                {
-                    Characters = characterSet.Characters.ToCharArray(),
-                    Min = characterSet.Min
-                });
-            }
-
-            _utility.Shuffle(_characterSets, true);
-
-            foreach (var charSet in _characterSets.Where(characterSet => characterSet.Characters != null))
-            {
-                if (charSet.Characters is { Length: > 0 })
-                {
-                    _utility.Shuffle(charSet.Characters, true);
-                }
-                else
-                {
-                    throw new ArgumentException("Invalid character set.");
-                }
-            }
-
-            _masterSet = _characterSets.SelectMany(characterSet => characterSet.Characters ?? throw new InvalidOperationException()).ToArray();
-            _utility.Shuffle(_masterSet, true);
-
-            return this;
+            _config = config;
+            _collectionShuffler = collectionShuffler;
+            _characterSelector = characterSelector;
+            _randomNumberGenerator = randomNumberGenerator;
         }
 
         public string Generate()
         {
-            var minUseTotal = _characterSets.Sum(c => c.Min);
+            var generated = GeneratePassword(_config);
+            return new string(generated.ToArray());
+        }
 
-            if (minUseTotal > _options.Value.Length)
+        private List<char> GeneratePassword(Configuration config)
+        {
+            ValidateConfiguration(config);
+
+            var generated = new List<char>();
+            var characterCount = new Dictionary<char, int>();
+
+            GenerateRequiredCharacters(generated, characterCount, config);
+            GenerateRandomCharacters(generated, characterCount, config);
+
+            _collectionShuffler.Shuffle(generated, config.AllowSequences, config.AllowUpperLowerSequences);
+
+            return generated;
+        }
+
+        private void ValidateConfiguration(Configuration config)
+        {
+            if (config.CharacterSets.Any(characterSet => !characterSet.Set.Any()))
+            {
+                throw new ArgumentException("Character sets cannot be empty or null.");
+            }
+
+            var minUseTotal = config.CharacterSets.Sum(characterSet => characterSet.Min);
+
+            if (minUseTotal > config.Length)
             {
                 throw new ArgumentException("The minimum usage of the character sets is more than the maximum length of the generated password.");
             }
 
-            if (_maxRepetition < -1)
+            if (config.CharacterSets.Any(characterSet => characterSet.Min < 0 || characterSet.Min > config.Length))
+            {
+                throw new ArgumentException("Minimum usage of a character set must be between 0 and the password length, inclusive.");
+            }
+
+            if (config.MaxRepetition < -1)
             {
                 throw new ArgumentException("The maximum repetition should be -1 or more.");
             }
+        }
 
-            var generated = new List<char>();
-            var characterCount = new Dictionary<char, int>();
-            var requiredSets = _characterSets.Where(x => x.Min > 0).ToArray();
-            
+        private void GenerateRequiredCharacters(ICollection<char> generated, IDictionary<char, int> characterCount, Configuration config)
+        {
+            var requiredSets = config.CharacterSets.Where(characterSet => characterSet.Min > 0).ToArray();
+
             foreach (var requiredSet in requiredSets)
             {
-                for (var i = 0; i < requiredSet.Min; i++)
-                {
-                    var nextCharacter = _utility.GetNextChar(requiredSet.Characters);
-
-                    if (_maxRepetition > -1)
-                    {
-                        var isRepeated = nextCharacter.IsRepeated(characterCount, _maxRepetition);
-
-                        if (!isRepeated)
-                        {
-                            generated.Add(nextCharacter);
-                        }
-                        else
-                        {
-                            i--;
-                        }
-                    }
-                    else
-                    {
-                        generated.Add(nextCharacter);
-                    }
-                }
+                AddRequiredCharactersFromSet(generated, characterCount, config, requiredSet);
             }
+        }
 
-            while (generated.Count < _options.Value.Length)
+        private void AddRequiredCharactersFromSet(ICollection<char> generated, IDictionary<char, int> characterCount, Configuration config, ICharacterSet requiredSet)
+        {
+            for (var i = 0; i < requiredSet.Min;)
             {
-                var randomSetIndex = _utility.GetRandomIntInRange(0, _characterSets.Count - 1);
-                var characterSet = _characterSets[randomSetIndex];
+                char? nextCharacter = _characterSelector.GetNextCharacter(requiredSet.Set);
 
-                var nextCharacter = _utility.GetNextChar(characterSet.Characters);
-
-                if (_maxRepetition >= 0)
+                if (config.MaxRepetition > -1)
                 {
-                    var isRepeated = nextCharacter.IsRepeated(characterCount, _maxRepetition);
-
-                    if (!isRepeated)
-                    {
-                        generated.Add(nextCharacter);
-                    }
+                    nextCharacter = HandleRepetition((char)nextCharacter, characterCount, config.MaxRepetition);
                 }
-                else
+
+                if (nextCharacter.HasValue)
                 {
-                    generated.Add(nextCharacter);
+                    generated.Add((char)nextCharacter);
+                    i++;
                 }
             }
-            
-            _utility.Shuffle(generated, _options.Value.AllowSequences);
+        }
 
-            return new string(generated.ToArray());
+        private void GenerateRandomCharacters(ICollection<char> generated, IDictionary<char, int> characterCount, Configuration config)
+        {
+            while (generated.Count < config.Length)
+            {
+                var randomSetIndex = _randomNumberGenerator.GetRandomIntInRange(0, config.CharacterSets.Count - 1);
+                var characterSet = config.CharacterSets[randomSetIndex];
+
+                char? nextCharacter = _characterSelector.GetNextCharacter(characterSet.Set);
+
+                if (config.MaxRepetition >= 0)
+                {
+                    nextCharacter = HandleRepetition((char)nextCharacter, characterCount, config.MaxRepetition);
+                }
+
+                if (nextCharacter.HasValue)
+                {
+                    generated.Add((char)nextCharacter);
+                }
+            }
+        }
+
+        private char? HandleRepetition(char character, IDictionary<char, int> characterCount, int maxRepetition)
+        {
+            return character.IsRepeated(characterCount, maxRepetition)
+                ? null
+                : character;
         }
     }
 }

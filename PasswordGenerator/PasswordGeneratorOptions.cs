@@ -4,7 +4,7 @@
     {
         public bool AllowSequences { get; set; }
         public bool AllowUpperLowerSequences { get; set; }
-        public List<CharacterSetOptions> CharactersSets { get; set; }
+        public List<CharacterSet> CharactersSets { get; set; }
         public int Length { get; set; }
         public int MaxRepetition { get; set; }
         public string OutputPath { get; set; }

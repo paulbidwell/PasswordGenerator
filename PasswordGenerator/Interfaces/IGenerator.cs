@@ -1,8 +1,7 @@
-﻿namespace PasswordGenerator
+﻿namespace PasswordGenerator.Interfaces
 {
     public interface IGenerator
     {
-        IGenerator Configure();
         string Generate();
     }
 }
