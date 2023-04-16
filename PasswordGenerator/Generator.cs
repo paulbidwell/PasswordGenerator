@@ -4,12 +4,12 @@ namespace PasswordGenerator
 {
     public class Generator : IGenerator
     {
-        private readonly Configuration _config;
+        private readonly IGeneratorConfig _config;
         private readonly ICollectionShuffler _collectionShuffler;
         private readonly ICharacterSelector _characterSelector;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
 
-        public Generator(Configuration config, ICollectionShuffler collectionShuffler, ICharacterSelector characterSelector, IRandomNumberGenerator randomNumberGenerator)
+        public Generator(IGeneratorConfig config, ICollectionShuffler collectionShuffler, ICharacterSelector characterSelector, IRandomNumberGenerator randomNumberGenerator)
         {
             _config = config;
             _collectionShuffler = collectionShuffler;
@@ -19,69 +19,69 @@ namespace PasswordGenerator
 
         public string Generate()
         {
-            var generated = GeneratePassword(_config);
+            var generated = GeneratePassword();
             return new string(generated.ToArray());
         }
 
-        private List<char> GeneratePassword(Configuration config)
+        private List<char> GeneratePassword()
         {
-            ValidateConfiguration(config);
+            ValidateConfiguration();
 
             var generated = new List<char>();
             var characterCount = new Dictionary<char, int>();
 
-            GenerateRequiredCharacters(generated, characterCount, config);
-            GenerateRandomCharacters(generated, characterCount, config);
+            GenerateRequiredCharacters(generated, characterCount);
+            GenerateRandomCharacters(generated, characterCount);
 
-            _collectionShuffler.Shuffle(generated, config.AllowSequences, config.AllowUpperLowerSequences);
+            _collectionShuffler.Shuffle(generated, _config.AllowSequences, _config.AllowUpperLowerSequences);
 
             return generated;
         }
 
-        private void ValidateConfiguration(Configuration config)
+        private void ValidateConfiguration()
         {
-            if (config.CharacterSets.Any(characterSet => !characterSet.Set.Any()))
+            if (_config.CharacterSets.Any(characterSet => !characterSet.Set.Any()))
             {
                 throw new ArgumentException("Character sets cannot be empty or null.");
             }
 
-            var minUseTotal = config.CharacterSets.Sum(characterSet => characterSet.Min);
+            var minUseTotal = _config.CharacterSets.Sum(characterSet => characterSet.Min);
 
-            if (minUseTotal > config.Length)
+            if (minUseTotal > _config.Length)
             {
                 throw new ArgumentException("The minimum usage of the character sets is more than the maximum length of the generated password.");
             }
 
-            if (config.CharacterSets.Any(characterSet => characterSet.Min < 0 || characterSet.Min > config.Length))
+            if (_config.CharacterSets.Any(characterSet => characterSet.Min < 0 || characterSet.Min > _config.Length))
             {
                 throw new ArgumentException("Minimum usage of a character set must be between 0 and the password length, inclusive.");
             }
 
-            if (config.MaxRepetition < -1)
+            if (_config.MaxRepetition < -1)
             {
                 throw new ArgumentException("The maximum repetition should be -1 or more.");
             }
         }
 
-        private void GenerateRequiredCharacters(ICollection<char> generated, IDictionary<char, int> characterCount, Configuration config)
+        private void GenerateRequiredCharacters(ICollection<char> generated, IDictionary<char, int> characterCount)
         {
-            var requiredSets = config.CharacterSets.Where(characterSet => characterSet.Min > 0).ToArray();
+            var requiredSets = _config.CharacterSets.Where(characterSet => characterSet.Min > 0).ToArray();
 
             foreach (var requiredSet in requiredSets)
             {
-                AddRequiredCharactersFromSet(generated, characterCount, config, requiredSet);
+                AddRequiredCharactersFromSet(generated, characterCount, requiredSet);
             }
         }
 
-        private void AddRequiredCharactersFromSet(ICollection<char> generated, IDictionary<char, int> characterCount, Configuration config, ICharacterSet requiredSet)
+        private void AddRequiredCharactersFromSet(ICollection<char> generated, IDictionary<char, int> characterCount, ICharacterSet requiredSet)
         {
             for (var i = 0; i < requiredSet.Min;)
             {
                 char? nextCharacter = _characterSelector.GetNextCharacter(requiredSet.Set);
 
-                if (config.MaxRepetition > -1)
+                if (_config.MaxRepetition > -1)
                 {
-                    nextCharacter = HandleRepetition((char)nextCharacter, characterCount, config.MaxRepetition);
+                    nextCharacter = HandleRepetition((char)nextCharacter, characterCount);
                 }
 
                 if (nextCharacter.HasValue)
@@ -92,18 +92,18 @@ namespace PasswordGenerator
             }
         }
 
-        private void GenerateRandomCharacters(ICollection<char> generated, IDictionary<char, int> characterCount, Configuration config)
+        private void GenerateRandomCharacters(ICollection<char> generated, IDictionary<char, int> characterCount)
         {
-            while (generated.Count < config.Length)
+            while (generated.Count < _config.Length)
             {
-                var randomSetIndex = _randomNumberGenerator.GetRandomIntInRange(0, config.CharacterSets.Count - 1);
-                var characterSet = config.CharacterSets[randomSetIndex];
+                var randomSetIndex = _randomNumberGenerator.GetRandomIntInRange(0, _config.CharacterSets.Count - 1);
+                var characterSet = _config.CharacterSets[randomSetIndex];
 
                 char? nextCharacter = _characterSelector.GetNextCharacter(characterSet.Set);
 
-                if (config.MaxRepetition >= 0)
+                if (_config.MaxRepetition >= 0)
                 {
-                    nextCharacter = HandleRepetition((char)nextCharacter, characterCount, config.MaxRepetition);
+                    nextCharacter = HandleRepetition((char)nextCharacter, characterCount);
                 }
 
                 if (nextCharacter.HasValue)
@@ -113,9 +113,9 @@ namespace PasswordGenerator
             }
         }
 
-        private char? HandleRepetition(char character, IDictionary<char, int> characterCount, int maxRepetition)
+        private char? HandleRepetition(char character, IDictionary<char, int> characterCount)
         {
-            return character.IsRepeated(characterCount, maxRepetition)
+            return character.IsRepeated(characterCount, _config.MaxRepetition)
                 ? null
                 : character;
         }

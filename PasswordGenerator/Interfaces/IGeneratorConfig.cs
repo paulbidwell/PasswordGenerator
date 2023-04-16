@@ -1,6 +1,6 @@
 ﻿namespace PasswordGenerator.Interfaces;
 
-public interface IConfiguration
+public interface IGeneratorConfig
 {
     public List<ICharacterSet> CharacterSets { get; }
     public int MaxRepetition { get; }

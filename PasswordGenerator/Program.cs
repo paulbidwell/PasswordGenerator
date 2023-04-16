@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PasswordGenerator.Interfaces;
-using IConfiguration = PasswordGenerator.Interfaces.IConfiguration;
 
 namespace PasswordGenerator;
 
@@ -24,7 +23,7 @@ internal class Program
                 services.AddTransient<ICharacterSetManager, CharacterSetManager>();
                 services.AddTransient<ICharacterSetShuffler, CharacterSetShuffler>();
                 services.AddTransient<ICollectionShuffler, CollectionShuffler>();
-                services.AddTransient<IConfiguration, Configuration>();
+                services.AddTransient<IGeneratorConfig, GeneratorConfig>();
                 services.AddTransient<IGenerator, Generator>();
                 services.AddTransient<IRandomNumberGenerator, RandomNumberGenerator>();
 

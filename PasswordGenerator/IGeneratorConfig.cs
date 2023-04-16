@@ -3,7 +3,7 @@ using PasswordGenerator.Interfaces;
 
 namespace PasswordGenerator
 {
-    public class Configuration : IConfiguration
+    public class GeneratorConfig : Interfaces.IGeneratorConfig
     {
         public List<ICharacterSet> CharacterSets { get; }
         public int MaxRepetition { get; }
@@ -11,7 +11,7 @@ namespace PasswordGenerator
         public bool AllowSequences { get; }
         public bool AllowUpperLowerSequences { get; }
 
-        public Configuration(IOptions<PasswordGeneratorOptions> options, ICharacterSetManager characterSetManager)
+        public GeneratorConfig(IOptions<PasswordGeneratorOptions> options, ICharacterSetManager characterSetManager)
         {
             MaxRepetition = options.Value.MaxRepetition;
             Length = options.Value.Length;
