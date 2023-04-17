@@ -13,7 +13,7 @@ internal class Program
         Directory.SetCurrentDirectory(Path.GetDirectoryName(applicationPath) ?? string.Empty);
 
         Microsoft.Extensions.Configuration.IConfiguration configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.json", false, true)
             .Build();
 
         var host = Host.CreateDefaultBuilder()
