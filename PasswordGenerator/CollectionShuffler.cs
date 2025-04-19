@@ -2,15 +2,8 @@
 
 namespace PasswordGenerator
 {
-    public class CollectionShuffler : ICollectionShuffler
+    public class CollectionShuffler(IRandomNumberGenerator randomNumberGenerator) : ICollectionShuffler
     {
-        private readonly IRandomNumberGenerator _randomNumberGenerator;
-
-        public CollectionShuffler(IRandomNumberGenerator randomNumberGenerator)
-        {
-            _randomNumberGenerator = randomNumberGenerator;
-        }
-
         public void Shuffle<T>(IList<T> collection, bool allowSequences, bool allowUpperLower)
         {
             ShuffleCollection(collection);
@@ -32,12 +25,12 @@ namespace PasswordGenerator
         {
             for (var i = 0; i < collection.Count; i++)
             {
-                var random = _randomNumberGenerator.GetRandomIntInRange(0, i + 1);
+                var random = randomNumberGenerator.GetRandomIntInRange(0, i);
                 (collection[i], collection[random]) = (collection[random], collection[i]);
             }
         }
 
-        private bool HasSequences<T>(IList<T> collection, StringComparison stringComparison)
+        private static bool HasSequences<T>(IList<T> collection, StringComparison stringComparison)
         {
             for (var i = 0; i < collection.Count - 1; i++)
             {

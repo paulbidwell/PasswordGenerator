@@ -4,8 +4,8 @@ namespace PasswordGenerator
 {
     public class CharacterSet : ICharacterSet
     {
-        public char[] Set { get; set; }
-        public string Characters { get; set; }
+        public required char[] Set { get; set; }
+        public required string Characters { get; set; }
         public int Min { get; set; }
     }
 }

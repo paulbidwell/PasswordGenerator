@@ -3,21 +3,12 @@ using PasswordGenerator.Interfaces;
 
 namespace PasswordGenerator
 {
-    public class GeneratorConfig : Interfaces.IGeneratorConfig
+    public class GeneratorConfig(IOptions<PasswordGeneratorOptions> options, ICharacterSetManager characterSetManager) : IGeneratorConfig
     {
-        public List<ICharacterSet> CharacterSets { get; }
-        public int MaxRepetition { get; }
-        public int Length { get; }
-        public bool AllowSequences { get; }
-        public bool AllowUpperLowerSequences { get; }
-
-        public GeneratorConfig(IOptions<PasswordGeneratorOptions> options, ICharacterSetManager characterSetManager)
-        {
-            MaxRepetition = options.Value.MaxRepetition;
-            Length = options.Value.Length;
-            AllowSequences = options.Value.AllowSequences;
-            AllowUpperLowerSequences = options.Value.AllowUpperLowerSequences;
-            CharacterSets = characterSetManager.CreateAndShuffleCharacterSets(options.Value.CharactersSets);
-        }
+        public List<ICharacterSet> CharacterSets { get; } = characterSetManager.CreateAndShuffleCharacterSets(options.Value.CharacterSets);
+        public int MaxRepetition { get; } = options.Value.MaxRepetition;
+        public int Length { get; } = options.Value.Length;
+        public bool AllowSequences { get; } = options.Value.AllowSequences;
+        public bool AllowUpperLowerSequences { get; } = options.Value.AllowUpperLowerSequences;
     }
 }

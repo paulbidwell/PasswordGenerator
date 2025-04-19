@@ -2,20 +2,13 @@
 
 namespace PasswordGenerator
 {
-    public class CharacterSetShuffler : ICharacterSetShuffler
+    public class CharacterSetShuffler(ICollectionShuffler collectionShuffler) : ICharacterSetShuffler
     {
-        private readonly ICollectionShuffler _collectionShuffler;
-
-        public CharacterSetShuffler(ICollectionShuffler collectionShuffler)
-        {
-            _collectionShuffler = collectionShuffler;
-        }
-
         public void ShuffleCharacterSet(ICharacterSet characterSet)
         {
             if (characterSet.Set is { Length: > 0 })
             {
-                _collectionShuffler.Shuffle(characterSet.Set, true, true);
+                collectionShuffler.Shuffle(characterSet.Set, true, true);
             }
             else
             {

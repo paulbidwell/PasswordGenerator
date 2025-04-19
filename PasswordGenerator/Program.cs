@@ -12,7 +12,7 @@ internal class Program
         var applicationPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
         Directory.SetCurrentDirectory(Path.GetDirectoryName(applicationPath) ?? string.Empty);
 
-        Microsoft.Extensions.Configuration.IConfiguration configuration = new ConfigurationBuilder()
+        IConfiguration configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", false, true)
             .Build();
 
@@ -21,11 +21,14 @@ internal class Program
             {
                 services.AddTransient<ICharacterSelector, CharacterSelector>();
                 services.AddTransient<ICharacterSetManager, CharacterSetManager>();
+                services.AddTransient<ICharacterGenerator, CharacterGenerator>();
                 services.AddTransient<ICharacterSetShuffler, CharacterSetShuffler>();
                 services.AddTransient<ICollectionShuffler, CollectionShuffler>();
+                services.AddTransient<IConfigurationValidator, ConfigurationValidator>();
                 services.AddTransient<IGeneratorConfig, GeneratorConfig>();
                 services.AddTransient<IGenerator, Generator>();
-                services.AddTransient<IRandomNumberGenerator, RandomNumberGenerator>();
+                services.AddTransient<IPasswordShuffler, PasswordShuffler>();
+                services.AddTransient<IRandomNumberGenerator, SecureRng>();
 
                 services.Configure<PasswordGeneratorOptions>(configuration.GetSection("PasswordGenerator"));
             })

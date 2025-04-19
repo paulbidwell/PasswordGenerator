@@ -2,24 +2,23 @@
 
 namespace PasswordGenerator
 {
-    public class CharacterSelector : ICharacterSelector
+    public class CharacterSelector(IRandomNumberGenerator randomNumberGenerator) : ICharacterSelector
     {
-        private readonly IRandomNumberGenerator _randomNumberGenerator;
-
-        public CharacterSelector(IRandomNumberGenerator randomNumberGenerator)
-        {
-            _randomNumberGenerator = randomNumberGenerator;
-        }
-
         public char GetNextCharacter(char[]? characters)
         {
             if (characters != null)
             {
-                var randomCharacterIndex = _randomNumberGenerator.GetRandomIntInRange(0, characters.Length - 1);
+                var randomCharacterIndex = randomNumberGenerator.GetRandomIntInRange(0, characters.Length - 1);
                 return characters[randomCharacterIndex];
             }
 
-            throw new NullReferenceException("Could not select a next character. The character set is null.");
+            if (characters is { Length: 0 })
+            {
+                throw new ArgumentException("Character array must not be empty", nameof(characters));
+            }
+
+            throw new ArgumentNullException(nameof(characters));
+            
         }
     }
 }

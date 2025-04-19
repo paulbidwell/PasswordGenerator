@@ -2,32 +2,30 @@
 
 namespace PasswordGenerator
 {
-    public class CharacterSetManager : ICharacterSetManager
+    public class CharacterSetManager(ICharacterSetShuffler characterSetShuffler, ICollectionShuffler collectionShuffler)
+        : ICharacterSetManager
     {
-        private readonly ICharacterSetShuffler _characterSetShuffler;
-        private readonly ICollectionShuffler _collectionShuffler;
-
-        public CharacterSetManager(ICharacterSetShuffler characterSetShuffler, ICollectionShuffler collectionShuffler)
-        {
-            _characterSetShuffler = characterSetShuffler;
-            _collectionShuffler = collectionShuffler;
-        }
-
         public List<ICharacterSet> CreateAndShuffleCharacterSets(IEnumerable<ICharacterSet> characterSets)
         {
             var result = new List<ICharacterSet>();
 
             foreach (var characterSet in characterSets)
             {
-                characterSet.Set = characterSet.Characters.ToCharArray();
-                result.Add(characterSet);
+                var clone = new CharacterSet
+                {
+                    Characters = characterSet.Characters,
+                    Min = characterSet.Min,
+                    Set = characterSet.Characters.ToCharArray()
+                };
+
+                result.Add(clone);
             }
 
-            _collectionShuffler.Shuffle(result, true, true);
+            collectionShuffler.Shuffle(result, true, true);
 
             foreach (var charSet in result)
             {
-                _characterSetShuffler.ShuffleCharacterSet(charSet);
+                characterSetShuffler.ShuffleCharacterSet(charSet);
             }
 
             return result;
