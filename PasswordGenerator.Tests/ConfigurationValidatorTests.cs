@@ -115,5 +115,53 @@ namespace PasswordGenerator.Tests
             var validator = new ConfigurationValidator();
             Assert.Throws<InvalidOperationException>(() => validator.Validate(config));
         }
+
+        [Fact]
+        public void Validate_MaxRepetitionLessThanNegativeOne_ThrowsArgumentException()
+        {
+            var config = new FakeGeneratorConfig
+            {
+                Length = 10,
+                MaxRepetition = -2,
+                AllowSequences = false,
+                AllowUpperLowerSequences = false,
+                CharacterSets = [new FakeCharacterSet { Set = "ABCDEFGHIJ".ToCharArray(), Min = 1 }]
+            };
+
+            var validator = new ConfigurationValidator();
+            Assert.Throws<ArgumentException>(() => validator.Validate(config));
+        }
+
+        [Fact]
+        public void Validate_MaxRepetitionZeroWithEnoughUniqueCharacters_DoesNotThrow()
+        {
+            var config = new FakeGeneratorConfig
+            {
+                Length = 5,
+                MaxRepetition = 0,
+                AllowSequences = false,
+                AllowUpperLowerSequences = false,
+                CharacterSets = [new FakeCharacterSet { Set = "ABCDE".ToCharArray(), Min = 0 }]
+            };
+
+            var validator = new ConfigurationValidator();
+            validator.Validate(config);
+        }
+
+        [Fact]
+        public void Validate_MaxRepetitionNegativeOne_DoesNotThrow()
+        {
+            var config = new FakeGeneratorConfig
+            {
+                Length = 10,
+                MaxRepetition = -1,
+                AllowSequences = false,
+                AllowUpperLowerSequences = false,
+                CharacterSets = [new FakeCharacterSet { Set = "ABCDEFGHIJ".ToCharArray(), Min = 0 }]
+            };
+
+            var validator = new ConfigurationValidator();
+            validator.Validate(config);
+        }
     }
 }
