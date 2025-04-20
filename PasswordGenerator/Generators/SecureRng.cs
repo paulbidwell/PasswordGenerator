@@ -1,7 +1,7 @@
-﻿using PasswordGenerator.Interfaces;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
+using PasswordGenerator.Core.Interfaces.Generators;
 
-namespace PasswordGenerator
+namespace PasswordGenerator.Generators
 {
     public class SecureRng : IRandomNumberGenerator, IDisposable
     {
@@ -26,7 +26,7 @@ namespace PasswordGenerator
 
                 if (rand < fullRange - remainder)
                 {
-                    return (int)(min + (rand % diff));
+                    return (int)(min + rand % diff);
                 }
             }
         }

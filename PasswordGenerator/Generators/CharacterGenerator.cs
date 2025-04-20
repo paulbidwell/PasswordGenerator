@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using PasswordGenerator.Interfaces;
+using PasswordGenerator.Core;
+using PasswordGenerator.Core.Interfaces.Generators;
+using PasswordGenerator.Core.Interfaces.Sets;
+using PasswordGenerator.Core.Interfaces.Shufflers;
 
-namespace PasswordGenerator
+namespace PasswordGenerator.Generators
 {
     public class CharacterGenerator(IGeneratorConfig config, ICharacterSelector characterSelector, IRandomNumberGenerator randomNumberGenerator, IPasswordShuffler passwordShuffler) : ICharacterGenerator
     {

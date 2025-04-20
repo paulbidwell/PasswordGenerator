@@ -1,7 +1,14 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PasswordGenerator.Interfaces;
+using PasswordGenerator.Core;
+using PasswordGenerator.Core.Interfaces;
+using PasswordGenerator.Core.Interfaces.Generators;
+using PasswordGenerator.Core.Interfaces.Sets;
+using PasswordGenerator.Core.Interfaces.Shufflers;
+using PasswordGenerator.Generators;
+using PasswordGenerator.Sets;
+using PasswordGenerator.Shufflers;
 
 namespace PasswordGenerator;
 
@@ -19,14 +26,14 @@ internal class Program
         var host = Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
+                services.AddTransient<ICharacterGenerator, CharacterGenerator>();
                 services.AddTransient<ICharacterSelector, CharacterSelector>();
                 services.AddTransient<ICharacterSetManager, CharacterSetManager>();
-                services.AddTransient<ICharacterGenerator, CharacterGenerator>();
                 services.AddTransient<ICharacterSetShuffler, CharacterSetShuffler>();
                 services.AddTransient<ICollectionShuffler, CollectionShuffler>();
                 services.AddTransient<IConfigurationValidator, ConfigurationValidator>();
-                services.AddTransient<IGeneratorConfig, GeneratorConfig>();
                 services.AddTransient<IGenerator, Generator>();
+                services.AddTransient<IGeneratorConfig, GeneratorConfig>();
                 services.AddTransient<IPasswordShuffler, PasswordShuffler>();
                 services.AddTransient<IRandomNumberGenerator, SecureRng>();
 

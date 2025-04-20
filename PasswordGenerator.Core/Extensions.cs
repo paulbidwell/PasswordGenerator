@@ -1,4 +1,4 @@
-﻿    namespace PasswordGenerator
+﻿    namespace PasswordGenerator.Core
 {
     public static class Extensions
     {

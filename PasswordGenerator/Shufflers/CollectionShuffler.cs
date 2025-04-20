@@ -1,6 +1,7 @@
-﻿using PasswordGenerator.Interfaces;
+﻿using PasswordGenerator.Core.Interfaces.Generators;
+using PasswordGenerator.Core.Interfaces.Shufflers;
 
-namespace PasswordGenerator
+namespace PasswordGenerator.Shufflers
 {
     public class CollectionShuffler(IRandomNumberGenerator randomNumberGenerator) : ICollectionShuffler
     {

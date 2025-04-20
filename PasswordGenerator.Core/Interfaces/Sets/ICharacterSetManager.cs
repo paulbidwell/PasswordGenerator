@@ -1,4 +1,4 @@
-﻿namespace PasswordGenerator.Interfaces;
+﻿namespace PasswordGenerator.Core.Interfaces.Sets;
 
 public interface ICharacterSetManager
 {

@@ -1,4 +1,6 @@
-﻿namespace PasswordGenerator.Interfaces;
+﻿using PasswordGenerator.Core.Interfaces.Sets;
+
+namespace PasswordGenerator.Core.Interfaces.Generators;
 
 public interface IGeneratorConfig
 {

@@ -1,6 +1,7 @@
-﻿using PasswordGenerator.Interfaces;
+﻿using PasswordGenerator.Core.Interfaces;
+using PasswordGenerator.Core.Interfaces.Generators;
 
-namespace PasswordGenerator
+namespace PasswordGenerator.Generators
 {
     public class Generator(IGeneratorConfig config, IConfigurationValidator validator, ICharacterGenerator characterGenerator) : IGenerator
     {

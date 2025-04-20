@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
-using PasswordGenerator.Interfaces;
+using PasswordGenerator.Core;
+using PasswordGenerator.Core.Interfaces.Generators;
+using PasswordGenerator.Core.Interfaces.Sets;
 
-namespace PasswordGenerator
+namespace PasswordGenerator.Generators
 {
     public class GeneratorConfig(IOptions<PasswordGeneratorOptions> options, ICharacterSetManager characterSetManager) : IGeneratorConfig
     {

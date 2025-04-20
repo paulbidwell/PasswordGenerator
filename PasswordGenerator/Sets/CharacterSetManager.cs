@@ -1,6 +1,7 @@
-﻿using PasswordGenerator.Interfaces;
+﻿using PasswordGenerator.Core.Interfaces.Sets;
+using PasswordGenerator.Core.Interfaces.Shufflers;
 
-namespace PasswordGenerator
+namespace PasswordGenerator.Sets
 {
     public class CharacterSetManager(ICharacterSetShuffler characterSetShuffler, ICollectionShuffler collectionShuffler)
         : ICharacterSetManager

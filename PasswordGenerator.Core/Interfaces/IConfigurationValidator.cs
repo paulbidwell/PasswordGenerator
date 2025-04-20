@@ -1,4 +1,6 @@
-﻿namespace PasswordGenerator.Interfaces
+﻿using PasswordGenerator.Core.Interfaces.Generators;
+
+namespace PasswordGenerator.Core.Interfaces
 {
     public interface IConfigurationValidator
     {

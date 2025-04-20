@@ -1,6 +1,6 @@
-﻿using PasswordGenerator.Interfaces;
+﻿using PasswordGenerator.Core.Interfaces.Sets;
 
-namespace PasswordGenerator
+namespace PasswordGenerator.Sets
 {
     public class CharacterSet : ICharacterSet
     {

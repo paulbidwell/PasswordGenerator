@@ -1,4 +1,4 @@
-﻿namespace PasswordGenerator.Interfaces;
+﻿namespace PasswordGenerator.Core.Interfaces.Shufflers;
 
 public interface ICollectionShuffler
 {

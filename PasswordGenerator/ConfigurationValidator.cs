@@ -1,4 +1,5 @@
-﻿using PasswordGenerator.Interfaces;
+﻿using PasswordGenerator.Core.Interfaces;
+using PasswordGenerator.Core.Interfaces.Generators;
 
 namespace PasswordGenerator
 {
