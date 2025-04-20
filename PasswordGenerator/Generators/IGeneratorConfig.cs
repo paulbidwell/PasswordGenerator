@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using PasswordGenerator.Core;
 using PasswordGenerator.Core.Interfaces.Generators;
 using PasswordGenerator.Core.Interfaces.Sets;
 

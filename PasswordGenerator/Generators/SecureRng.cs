@@ -1,5 +1,5 @@
-﻿using System.Security.Cryptography;
-using PasswordGenerator.Core.Interfaces.Generators;
+﻿using PasswordGenerator.Core.Interfaces.Generators;
+using System.Security.Cryptography;
 
 namespace PasswordGenerator.Generators
 {

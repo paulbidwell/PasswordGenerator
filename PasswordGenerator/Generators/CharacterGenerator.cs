@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using PasswordGenerator.Core;
+﻿using PasswordGenerator.Core;
 using PasswordGenerator.Core.Interfaces.Generators;
 using PasswordGenerator.Core.Interfaces.Sets;
 using PasswordGenerator.Core.Interfaces.Shufflers;
