@@ -42,11 +42,12 @@ namespace PasswordGenerator.Generators
         private void AddRequiredCharactersFromSet(char[] buffer, ref int index, IDictionary<char, int> characterCount, ICharacterSet set)
         {
             var added = 0;
+            var maxAttempts = MaxAttemptsPerCharacter * set.Min;
             var attempts = 0;
 
             while (added < set.Min)
             {
-                if (++attempts > MaxAttemptsPerCharacter * set.Min)
+                if (++attempts > maxAttempts)
                 {
                     throw new InvalidOperationException(
                         $"Unable to satisfy minimum character requirements after {attempts} attempts. " +

@@ -14,6 +14,8 @@ namespace PasswordGenerator;
 
 internal class Program
 {
+    private const int BatchSize = 10000;
+
     private static void Main()
     {
         try
@@ -76,8 +78,7 @@ internal class Program
 
     private static void GeneratePasswordsToFile(IHost host, PasswordGeneratorOptions config)
     {
-        const int batchSize = 10000;
-        var passwordsBatch = new List<string>(batchSize);
+        var passwordsBatch = new List<string>(BatchSize);
 
         try
         {
@@ -95,7 +96,7 @@ internal class Program
                     Console.WriteLine(password);
                 }
 
-                if (passwordsBatch.Count >= batchSize || i == config.PasswordsToGenerate - 1)
+                if (passwordsBatch.Count >= BatchSize || i == config.PasswordsToGenerate - 1)
                 {
                     foreach (var pwd in passwordsBatch)
                     {

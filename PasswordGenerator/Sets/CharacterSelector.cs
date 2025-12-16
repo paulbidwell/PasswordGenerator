@@ -17,10 +17,7 @@ namespace PasswordGenerator.Sets
         /// <exception cref="ArgumentException">Thrown when characters array is empty.</exception>
         public char GetNextCharacter(char[]? characters)
         {
-            if (characters == null)
-            {
-                throw new ArgumentNullException(nameof(characters));
-            }
+            ArgumentNullException.ThrowIfNull(characters);
 
             if (characters.Length == 0)
             {
