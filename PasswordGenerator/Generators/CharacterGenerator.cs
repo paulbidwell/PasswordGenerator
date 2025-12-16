@@ -67,10 +67,12 @@ namespace PasswordGenerator.Generators
         private void GenerateRandomCharacters(char[] buffer, ref int index, IDictionary<char, int> characterCount)
         {
             var attempts = 0;
-            var maxAttempts = MaxAttemptsPerCharacter * (config.Length - index);
 
             while (index < config.Length)
             {
+                var remainingCharacters = config.Length - index;
+                var maxAttempts = MaxAttemptsPerCharacter * remainingCharacters;
+
                 if (++attempts > maxAttempts)
                 {
                     throw new InvalidOperationException(
@@ -84,6 +86,7 @@ namespace PasswordGenerator.Generators
                 if (next.HasValue)
                 {
                     buffer[index++] = next.Value;
+                    attempts = 0; // Reset attempts counter after successful character addition
                 }
             }
         }

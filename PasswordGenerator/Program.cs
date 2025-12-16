@@ -9,6 +9,7 @@ using PasswordGenerator.Core.Interfaces.Shufflers;
 using PasswordGenerator.Generators;
 using PasswordGenerator.Sets;
 using PasswordGenerator.Shufflers;
+using System.Text;
 
 namespace PasswordGenerator;
 
@@ -83,7 +84,7 @@ internal class Program
 
         try
         {
-            using var writer = new StreamWriter(config.OutputPath, false);
+            using var writer = new StreamWriter(config.OutputPath, false, Encoding.UTF8);
 
             for (var i = 0; i < config.PasswordsToGenerate; i++)
             {
