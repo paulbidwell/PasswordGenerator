@@ -79,6 +79,7 @@ internal class Program
     private static void GeneratePasswordsToFile(IHost host, PasswordGeneratorOptions config)
     {
         var passwordsBatch = new List<string>(BatchSize);
+        var generator = host.Services.GetRequiredService<IGenerator>();
 
         try
         {
@@ -86,7 +87,6 @@ internal class Program
 
             for (var i = 0; i < config.PasswordsToGenerate; i++)
             {
-                var generator = host.Services.GetRequiredService<IGenerator>();
                 var password = generator.Generate();
 
                 passwordsBatch.Add(password);
@@ -118,9 +118,10 @@ internal class Program
 
     private static void GeneratePasswordsToConsole(IHost host, PasswordGeneratorOptions config)
     {
+        var generator = host.Services.GetRequiredService<IGenerator>();
+
         for (var i = 0; i < config.PasswordsToGenerate; i++)
         {
-            var generator = host.Services.GetRequiredService<IGenerator>();
             var password = generator.Generate();
 
             if (config.OutputToConsole)
