@@ -7,19 +7,18 @@ namespace PasswordGenerator.Sets
     {
         public char GetNextCharacter(char[]? characters)
         {
-            if (characters != null)
+            if (characters == null)
             {
-                var randomCharacterIndex = randomNumberGenerator.GetRandomIntInRange(0, characters.Length - 1);
-                return characters[randomCharacterIndex];
+                throw new ArgumentNullException(nameof(characters));
             }
 
-            if (characters is { Length: 0 })
+            if (characters.Length == 0)
             {
                 throw new ArgumentException("Character array must not be empty", nameof(characters));
             }
 
-            throw new ArgumentNullException(nameof(characters));
-            
+            var randomCharacterIndex = randomNumberGenerator.GetRandomIntInRange(0, characters.Length - 1);
+            return characters[randomCharacterIndex];
         }
     }
 }

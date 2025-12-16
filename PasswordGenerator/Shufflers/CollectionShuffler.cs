@@ -5,8 +5,15 @@ namespace PasswordGenerator.Shufflers
 {
     public class CollectionShuffler(IRandomNumberGenerator randomNumberGenerator) : ICollectionShuffler
     {
+        private const int MaxShuffleAttempts = 1000;
+
         public void Shuffle<T>(IList<T> collection, bool allowSequences, bool allowUpperLower)
         {
+            if (collection.Count == 0)
+            {
+                return;
+            }
+
             ShuffleCollection(collection);
 
             if (!allowSequences)
@@ -15,8 +22,16 @@ namespace PasswordGenerator.Shufflers
                     ? StringComparison.CurrentCulture
                     : StringComparison.CurrentCultureIgnoreCase;
 
+                var attempts = 0;
                 while (HasSequences(collection, stringComparison))
                 {
+                    if (++attempts > MaxShuffleAttempts)
+                    {
+                        throw new InvalidOperationException(
+                            $"Unable to generate password without sequences after {MaxShuffleAttempts} attempts. " +
+                            "This may indicate that the configuration makes it impossible to avoid sequences.");
+                    }
+
                     ShuffleCollection(collection);
                 }
             }

@@ -35,12 +35,7 @@ namespace PasswordGenerator.Generators
 
             while (added < set.Min)
             {
-                char? next = characterSelector.GetNextCharacter(set.Set);
-
-                if (config.MaxRepetition > -1)
-                {
-                    next = HandleRepetition(next.Value, characterCount);
-                }
+                var next = GetValidCharacter(set.Set, characterCount);
 
                 if (next.HasValue)
                 {
@@ -55,12 +50,7 @@ namespace PasswordGenerator.Generators
             while (index < config.Length)
             {
                 var characterSet = PickRandomCharacterSet();
-                char? next = characterSelector.GetNextCharacter(characterSet.Set);
-
-                if (config.MaxRepetition >= 0)
-                {
-                    next = HandleRepetition(next.Value, characterCount);
-                }
+                var next = GetValidCharacter(characterSet.Set, characterCount);
 
                 if (next.HasValue)
                 {
@@ -73,6 +63,18 @@ namespace PasswordGenerator.Generators
         {
             var randomIndex = randomNumberGenerator.GetRandomIntInRange(0, config.CharacterSets.Count - 1);
             return config.CharacterSets[randomIndex];
+        }
+
+        private char? GetValidCharacter(char[] characterSet, IDictionary<char, int> characterCount)
+        {
+            var next = characterSelector.GetNextCharacter(characterSet);
+
+            if (config.MaxRepetition > -1)
+            {
+                return HandleRepetition(next, characterCount);
+            }
+
+            return next;
         }
 
         private char? HandleRepetition(char character, IDictionary<char, int> characterCount)

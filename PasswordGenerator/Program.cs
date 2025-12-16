@@ -16,37 +16,45 @@ internal class Program
 {
     private static void Main()
     {
-        var applicationPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-        Directory.SetCurrentDirectory(Path.GetDirectoryName(applicationPath) ?? string.Empty);
-
-        IConfiguration configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", false, true)
-            .Build();
-
-        var host = Host.CreateDefaultBuilder()
-            .ConfigureServices(services =>
-            {
-                services.AddTransient<ICharacterGenerator, CharacterGenerator>();
-                services.AddTransient<ICharacterSelector, CharacterSelector>();
-                services.AddTransient<ICharacterSetManager, CharacterSetManager>();
-                services.AddTransient<ICharacterSetShuffler, CharacterSetShuffler>();
-                services.AddTransient<ICollectionShuffler, CollectionShuffler>();
-                services.AddTransient<IConfigurationValidator, ConfigurationValidator>();
-                services.AddTransient<IGenerator, Generator>();
-                services.AddTransient<IGeneratorConfig, GeneratorConfig>();
-                services.AddTransient<IPasswordShuffler, PasswordShuffler>();
-                services.AddTransient<IRandomNumberGenerator, SecureRng>();
-
-                services.Configure<PasswordGeneratorOptions>(configuration.GetSection("PasswordGenerator"));
-            })
-            .Build();
-
-        var config = configuration.GetSection("PasswordGenerator").Get<PasswordGeneratorOptions>();
-
-        var passwords = new List<string>();
-
-        if (config != null)
+        try
         {
+            var applicationPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(applicationPath) ?? string.Empty);
+
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", false, true)
+                .Build();
+
+            using var host = Host.CreateDefaultBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddTransient<ICharacterGenerator, CharacterGenerator>();
+                    services.AddTransient<ICharacterSelector, CharacterSelector>();
+                    services.AddTransient<ICharacterSetManager, CharacterSetManager>();
+                    services.AddTransient<ICharacterSetShuffler, CharacterSetShuffler>();
+                    services.AddTransient<ICollectionShuffler, CollectionShuffler>();
+                    services.AddTransient<IConfigurationValidator, ConfigurationValidator>();
+                    services.AddTransient<IGenerator, Generator>();
+                    services.AddTransient<IGeneratorConfig, GeneratorConfig>();
+                    services.AddTransient<IPasswordShuffler, PasswordShuffler>();
+                    services.AddSingleton<IRandomNumberGenerator, SecureRng>();
+
+                    services.Configure<PasswordGeneratorOptions>(configuration.GetSection("PasswordGenerator"));
+                })
+                .Build();
+
+            var config = configuration.GetSection("PasswordGenerator").Get<PasswordGeneratorOptions>();
+
+            if (config == null)
+            {
+                Console.Error.WriteLine("Failed to load configuration from appsettings.json");
+                return;
+            }
+
+            ValidateConfiguration(config);
+
+            var passwords = new List<string>();
+
             for (var i = 0; i < config.PasswordsToGenerate; i++)
             {
                 var generator = host.Services.GetRequiredService<IGenerator>();
@@ -63,8 +71,75 @@ internal class Program
 
             if (config.OutputToFile)
             {
-                File.WriteAllLines(config.OutputPath, passwords);
+                WritePasswordsToFile(config.OutputPath, passwords);
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            Environment.Exit(1);
+        }
+    }
+
+    private static void ValidateConfiguration(PasswordGeneratorOptions config)
+    {
+        const int maxPasswordsToGenerate = 10_000_000;
+        
+        if (config.PasswordsToGenerate < 1)
+        {
+            throw new ArgumentException("PasswordsToGenerate must be at least 1.");
+        }
+
+        if (config.PasswordsToGenerate > maxPasswordsToGenerate)
+        {
+            throw new ArgumentException($"PasswordsToGenerate cannot exceed {maxPasswordsToGenerate} to prevent resource exhaustion.");
+        }
+
+        if (config.Length < 1)
+        {
+            throw new ArgumentException("Password length must be at least 1.");
+        }
+
+        if (config.OutputToFile && string.IsNullOrWhiteSpace(config.OutputPath))
+        {
+            throw new ArgumentException("OutputPath must be specified when OutputToFile is true.");
+        }
+
+        if (config.OutputToFile)
+        {
+            ValidateOutputPath(config.OutputPath);
+        }
+    }
+
+    private static void ValidateOutputPath(string outputPath)
+    {
+        var fullPath = Path.GetFullPath(outputPath);
+        var directory = Path.GetDirectoryName(fullPath);
+
+        if (string.IsNullOrWhiteSpace(directory))
+        {
+            throw new ArgumentException("Invalid output path specified.");
+        }
+
+        if (!Directory.Exists(directory))
+        {
+            throw new DirectoryNotFoundException($"Output directory does not exist: {directory}");
+        }
+    }
+
+    private static void WritePasswordsToFile(string outputPath, List<string> passwords)
+    {
+        try
+        {
+            File.WriteAllLines(outputPath, passwords);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new UnauthorizedAccessException($"Access denied writing to file: {outputPath}", ex);
+        }
+        catch (IOException ex)
+        {
+            throw new IOException($"Failed to write passwords to file: {outputPath}", ex);
         }
     }
 }
