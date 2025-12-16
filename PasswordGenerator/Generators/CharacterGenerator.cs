@@ -97,7 +97,7 @@ namespace PasswordGenerator.Generators
         {
             var next = characterSelector.GetNextCharacter(characterSet);
 
-            if (config.MaxRepetition > -1)
+            if (config.MaxRepetition >= 0)
             {
                 return HandleRepetition(next, characterCount);
             }
