@@ -3,8 +3,17 @@ using PasswordGenerator.Core.Interfaces.Generators;
 
 namespace PasswordGenerator
 {
+    /// <summary>
+    /// Validates password generator configuration to ensure it meets all requirements and constraints.
+    /// </summary>
     public class ConfigurationValidator : IConfigurationValidator
     {
+        /// <summary>
+        /// Validates the generator configuration for consistency and feasibility.
+        /// </summary>
+        /// <param name="config">The configuration to validate.</param>
+        /// <exception cref="ArgumentException">Thrown when configuration contains invalid values.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when configuration is logically impossible to satisfy.</exception>
         public void Validate(IGeneratorConfig config)
         {
             ValidateCharacterSets(config);

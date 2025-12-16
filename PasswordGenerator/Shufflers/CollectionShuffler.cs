@@ -3,10 +3,21 @@ using PasswordGenerator.Core.Interfaces.Shufflers;
 
 namespace PasswordGenerator.Shufflers
 {
+    /// <summary>
+    /// Shuffles collections using the Fisher-Yates algorithm with optional sequence prevention.
+    /// </summary>
     public class CollectionShuffler(IRandomNumberGenerator randomNumberGenerator) : ICollectionShuffler
     {
         private const int MaxShuffleAttempts = 1000;
 
+        /// <summary>
+        /// Shuffles the collection randomly, optionally preventing consecutive duplicate elements.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in the collection.</typeparam>
+        /// <param name="collection">The collection to shuffle.</param>
+        /// <param name="allowSequences">If false, prevents consecutive duplicate elements.</param>
+        /// <param name="allowUpperLower">If true, case-sensitive comparison is used when checking sequences.</param>
+        /// <exception cref="InvalidOperationException">Thrown when sequences cannot be avoided after maximum attempts.</exception>
         public void Shuffle<T>(IList<T> collection, bool allowSequences, bool allowUpperLower)
         {
             if (collection.Count == 0)

@@ -5,10 +5,18 @@ using PasswordGenerator.Core.Interfaces.Shufflers;
 
 namespace PasswordGenerator.Generators
 {
+    /// <summary>
+    /// Generates passwords based on configured character sets and constraints.
+    /// </summary>
     public class CharacterGenerator(IGeneratorConfig config, ICharacterSelector characterSelector, IRandomNumberGenerator randomNumberGenerator, IPasswordShuffler passwordShuffler) : ICharacterGenerator
     {
         private const int MaxAttemptsPerCharacter = 1000;
 
+        /// <summary>
+        /// Generates a password as a character array based on the configuration.
+        /// </summary>
+        /// <returns>A character array representing the generated password.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the password cannot be generated due to impossible configuration.</exception>
         public char[] GeneratePassword()
         {
             var buffer = new char[config.Length];
