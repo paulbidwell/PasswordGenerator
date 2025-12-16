@@ -7,6 +7,8 @@ namespace PasswordGenerator.Generators
 {
     public class CharacterGenerator(IGeneratorConfig config, ICharacterSelector characterSelector, IRandomNumberGenerator randomNumberGenerator, IPasswordShuffler passwordShuffler) : ICharacterGenerator
     {
+        private const int MaxAttemptsPerCharacter = 1000;
+
         public char[] GeneratePassword()
         {
             var buffer = new char[config.Length];
@@ -32,9 +34,17 @@ namespace PasswordGenerator.Generators
         private void AddRequiredCharactersFromSet(char[] buffer, ref int index, IDictionary<char, int> characterCount, ICharacterSet set)
         {
             var added = 0;
+            var attempts = 0;
 
             while (added < set.Min)
             {
+                if (++attempts > MaxAttemptsPerCharacter * set.Min)
+                {
+                    throw new InvalidOperationException(
+                        $"Unable to satisfy minimum character requirements after {attempts} attempts. " +
+                        "This may indicate the configuration is impossible to satisfy (e.g., MaxRepetition too low).");
+                }
+
                 var next = GetValidCharacter(set.Set, characterCount);
 
                 if (next.HasValue)
@@ -47,8 +57,18 @@ namespace PasswordGenerator.Generators
 
         private void GenerateRandomCharacters(char[] buffer, ref int index, IDictionary<char, int> characterCount)
         {
+            var attempts = 0;
+            var maxAttempts = MaxAttemptsPerCharacter * (config.Length - index);
+
             while (index < config.Length)
             {
+                if (++attempts > maxAttempts)
+                {
+                    throw new InvalidOperationException(
+                        $"Unable to complete password generation after {attempts} attempts. " +
+                        "This may indicate the configuration is impossible to satisfy (e.g., MaxRepetition too low).");
+                }
+
                 var characterSet = PickRandomCharacterSet();
                 var next = GetValidCharacter(characterSet.Set, characterCount);
 

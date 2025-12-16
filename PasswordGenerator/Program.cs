@@ -53,31 +53,79 @@ internal class Program
 
             ValidateConfiguration(config);
 
-            var passwords = new List<string>();
-
-            for (var i = 0; i < config.PasswordsToGenerate; i++)
-            {
-                var generator = host.Services.GetRequiredService<IGenerator>();
-
-                var password = generator.Generate();
-
-                passwords.Add(password);
-
-                if (config.OutputToConsole)
-                {
-                    Console.WriteLine(password);
-                }
-            }
-
-            if (config.OutputToFile)
-            {
-                WritePasswordsToFile(config.OutputPath, passwords);
-            }
+            GeneratePasswords(host, config);
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"An error occurred: {ex.Message}");
             Environment.Exit(1);
+        }
+    }
+
+    private static void GeneratePasswords(IHost host, PasswordGeneratorOptions config)
+    {
+        if (config.OutputToFile)
+        {
+            GeneratePasswordsToFile(host, config);
+        }
+        else
+        {
+            GeneratePasswordsToConsole(host, config);
+        }
+    }
+
+    private static void GeneratePasswordsToFile(IHost host, PasswordGeneratorOptions config)
+    {
+        const int batchSize = 10000;
+        var passwordsBatch = new List<string>(batchSize);
+
+        try
+        {
+            using var writer = new StreamWriter(config.OutputPath, false);
+
+            for (var i = 0; i < config.PasswordsToGenerate; i++)
+            {
+                var generator = host.Services.GetRequiredService<IGenerator>();
+                var password = generator.Generate();
+
+                passwordsBatch.Add(password);
+
+                if (config.OutputToConsole)
+                {
+                    Console.WriteLine(password);
+                }
+
+                if (passwordsBatch.Count >= batchSize || i == config.PasswordsToGenerate - 1)
+                {
+                    foreach (var pwd in passwordsBatch)
+                    {
+                        writer.WriteLine(pwd);
+                    }
+                    passwordsBatch.Clear();
+                }
+            }
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new UnauthorizedAccessException($"Access denied writing to file: {config.OutputPath}", ex);
+        }
+        catch (IOException ex)
+        {
+            throw new IOException($"Failed to write passwords to file: {config.OutputPath}", ex);
+        }
+    }
+
+    private static void GeneratePasswordsToConsole(IHost host, PasswordGeneratorOptions config)
+    {
+        for (var i = 0; i < config.PasswordsToGenerate; i++)
+        {
+            var generator = host.Services.GetRequiredService<IGenerator>();
+            var password = generator.Generate();
+
+            if (config.OutputToConsole)
+            {
+                Console.WriteLine(password);
+            }
         }
     }
 
@@ -124,22 +172,6 @@ internal class Program
         if (!Directory.Exists(directory))
         {
             throw new DirectoryNotFoundException($"Output directory does not exist: {directory}");
-        }
-    }
-
-    private static void WritePasswordsToFile(string outputPath, List<string> passwords)
-    {
-        try
-        {
-            File.WriteAllLines(outputPath, passwords);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            throw new UnauthorizedAccessException($"Access denied writing to file: {outputPath}", ex);
-        }
-        catch (IOException ex)
-        {
-            throw new IOException($"Failed to write passwords to file: {outputPath}", ex);
         }
     }
 }
