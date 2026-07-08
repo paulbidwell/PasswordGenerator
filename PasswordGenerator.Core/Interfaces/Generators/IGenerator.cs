@@ -1,7 +1,17 @@
-﻿namespace PasswordGenerator.Core.Interfaces.Generators
+﻿namespace PasswordGenerator.Core.Interfaces.Generators;
+
+/// <summary>
+/// Generates cryptographically random passwords.
+/// </summary>
+public interface IGenerator
 {
-    public interface IGenerator
-    {
-        string Generate();
-    }
+    /// <summary>
+    /// Generates a single random password.
+    /// </summary>
+    string Generate();
+
+    /// <summary>
+    /// Generates a batch of up to <paramref name="count"/> unique random passwords.
+    /// </summary>
+    BatchResult GenerateBatch(int count);
 }

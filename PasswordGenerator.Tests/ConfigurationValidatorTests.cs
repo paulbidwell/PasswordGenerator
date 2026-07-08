@@ -9,6 +9,7 @@ namespace PasswordGenerator.Tests
         public char[] Set { get; set; } = [];
         public string Characters { get; set; } = "";
         public int Min { get; set; }
+        public int Weight { get; set; }
     }
 
     public class FakeGeneratorConfig : IGeneratorConfig
@@ -18,6 +19,8 @@ namespace PasswordGenerator.Tests
         public int Length { get; init; }
         public bool AllowSequences { get; init; }
         public bool AllowUpperLowerSequences { get; init; }
+        public bool MustStartWithLetter { get; init; }
+        public bool ExcludeLeadingTrailingSymbols { get; init; }
     }
 
     public class ConfigurationValidatorTests
@@ -158,6 +161,42 @@ namespace PasswordGenerator.Tests
                 AllowSequences = false,
                 AllowUpperLowerSequences = false,
                 CharacterSets = [new FakeCharacterSet { Set = "ABCDEFGHIJ".ToCharArray(), Min = 0 }]
+            };
+
+            var validator = new ConfigurationValidator();
+            validator.Validate(config);
+        }
+
+        [Fact]
+        public void Validate_TotalMinExactlyEqualsLength_DoesNotThrow()
+        {
+            var config = new FakeGeneratorConfig
+            {
+                Length = 6,
+                MaxRepetition = -1,
+                AllowSequences = false,
+                AllowUpperLowerSequences = false,
+                CharacterSets =
+                [
+                    new FakeCharacterSet { Set = "ABC".ToCharArray(), Min = 3 },
+                    new FakeCharacterSet { Set = "DEF".ToCharArray(), Min = 3 }
+                ]
+            };
+
+            var validator = new ConfigurationValidator();
+            validator.Validate(config);
+        }
+
+        [Fact]
+        public void Validate_EmptyCharacterSetsList_DoesNotThrow()
+        {
+            var config = new FakeGeneratorConfig
+            {
+                Length = 0,
+                MaxRepetition = -1,
+                AllowSequences = false,
+                AllowUpperLowerSequences = false,
+                CharacterSets = []
             };
 
             var validator = new ConfigurationValidator();

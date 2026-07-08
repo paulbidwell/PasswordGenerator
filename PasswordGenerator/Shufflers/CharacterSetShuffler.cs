@@ -1,20 +1,17 @@
 ﻿using PasswordGenerator.Core.Interfaces.Sets;
 using PasswordGenerator.Core.Interfaces.Shufflers;
 
-namespace PasswordGenerator.Shufflers
+namespace PasswordGenerator.Shufflers;
+
+/// <summary>Shuffles the character array within an individual <see cref="ICharacterSet"/>.</summary>
+public class CharacterSetShuffler(ICollectionShuffler collectionShuffler) : ICharacterSetShuffler
 {
-    public class CharacterSetShuffler(ICollectionShuffler collectionShuffler) : ICharacterSetShuffler
+    /// <inheritdoc />
+    public void ShuffleCharacterSet(ICharacterSet characterSet)
     {
-        public void ShuffleCharacterSet(ICharacterSet characterSet)
-        {
-            if (characterSet.Set is { Length: > 0 })
-            {
-                collectionShuffler.Shuffle(characterSet.Set, true, true);
-            }
-            else
-            {
-                throw new ArgumentException("Invalid character set.");
-            }
-        }
+        if (characterSet.Set is not { Length: > 0 })
+            throw new ArgumentException("Invalid character set.");
+
+        collectionShuffler.Shuffle(characterSet.Set, true, true);
     }
 }

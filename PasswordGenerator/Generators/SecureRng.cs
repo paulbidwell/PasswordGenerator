@@ -1,40 +1,35 @@
 ﻿using PasswordGenerator.Core.Interfaces.Generators;
 using System.Security.Cryptography;
 
-namespace PasswordGenerator.Generators
+namespace PasswordGenerator.Generators;
+
+/// <summary>Cryptographically secure random number generator backed by <see cref="RandomNumberGenerator"/>.</summary>
+public class SecureRng : IRandomNumberGenerator
 {
-    public class SecureRng : IRandomNumberGenerator, IDisposable
+    /// <inheritdoc />
+    public int GetRandomIntInRange(int min, int max)
     {
-        private readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
-
-        public int GetRandomIntInRange(int min, int max)
+        if (min > max)
         {
-            if (min > max)
-            {
-                throw new ArgumentException("min cannot be greater than max", nameof(min));
-            }
-
-            var diff = (long)max - min + 1;
-            var uint32Buffer = new byte[4];
-            const long fullRange = 1L << 32;
-
-            while (true)
-            {
-                _rng.GetBytes(uint32Buffer);
-                var rand = BitConverter.ToUInt32(uint32Buffer, 0);
-                var remainder = fullRange % diff;
-
-                if (rand < fullRange - remainder)
-                {
-                    return (int)(min + rand % diff);
-                }
-            }
+            throw new ArgumentException("min cannot be greater than max", nameof(min));
         }
 
-        public void Dispose()
+        if (min == max)
         {
-            _rng.Dispose();
-            GC.SuppressFinalize(this);
+            return min;
         }
+
+        if (max == int.MaxValue)
+        {
+            if (min == int.MinValue)
+            {
+                throw new ArgumentOutOfRangeException(nameof(min),
+                    "The range [int.MinValue, int.MaxValue] is not supported.");
+            }
+
+            return RandomNumberGenerator.GetInt32(min - 1, max) + 1;
+        }
+
+        return RandomNumberGenerator.GetInt32(min, max + 1);
     }
 }
