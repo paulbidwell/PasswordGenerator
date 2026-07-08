@@ -25,10 +25,12 @@ The fluent builder provides a standalone way to configure and create generators 
 #### Password Builder
 ```csharp
 using PasswordGenerator;
+
 // One-liner with defaults (22 chars, mixed case + digits + symbols)
 string password = PasswordGeneratorBuilder.Create()
     .Build()
     .Generate();
+
 // Customised
 string password = PasswordGeneratorBuilder.Create()
     .WithLength(18)
@@ -38,17 +40,20 @@ string password = PasswordGeneratorBuilder.Create()
     .MustStartWithLetter()
     .Build()
     .Generate();
+
 // Batch generation
 IReadOnlyList<string> batch = PasswordGeneratorBuilder.Create()
     .WithLength(24)
     .AsciiOnly()
     .Build()
     .GenerateBatch(50);
+
 // Start from a compliance preset, then override
 string password = PasswordGeneratorBuilder.From(PasswordPolicy.Owasp)
     .WithLength(20)
     .Build()
     .Generate();
+
 // Custom character sets
 string password = PasswordGeneratorBuilder.Create()
     .ClearCharacterSets()
